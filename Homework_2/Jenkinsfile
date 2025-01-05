@@ -10,7 +10,7 @@ pipeline {
                 sh 'ls -la'
         }
     }
-        }
+    }
         stage('Verify Docker Installation') {
             steps {
                 script {
@@ -19,7 +19,7 @@ pipeline {
                 }
             }
         }
-        stage('Verify Docker Installation') {
+        stage('Verify Docker build') {
             steps {
                 script {
                     // Verify Docker installation by checking the version
