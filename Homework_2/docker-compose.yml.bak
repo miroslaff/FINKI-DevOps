@@ -45,13 +45,21 @@ services:
       - "50000:50000" # Jenkins agent communication
     volumes:
       - jenkins_home:/var/jenkins_home
-      # - //var/run/docker.sock:/var/run/docker.sock
-    # environment:
+      - //var/run/docker.sock:/var/run/docker.sock
+    environment:
       # - DOCKER_HOST=tcp://docker:2375
+        - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
       - app-network
     depends_on:
       - gitea
+  
+  docker:
+    image: docker:19.03.12-dind  # Docker-in-Docker image
+    privileged: true
+    command: --host=tcp://0.0.0.0:2375  # Expose Docker daemon over TCP
+    networks:
+      - app-network
 
   nexus:
     image: sonatype/nexus3:latest
