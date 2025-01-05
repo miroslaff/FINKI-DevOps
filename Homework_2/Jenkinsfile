@@ -14,7 +14,8 @@ pipeline {
         stage('Configure Docker') {
             steps {
                 sh 'curl -fsSL https://get.docker.com -o get-docker.sh'
-                sh 'get-docker.sh'
+                sh 'where get-docker.sh'
+                sh 'sudo sh get-docker.sh'
                 // // Add Docker's official GPG key:
                 // sh 'apt-get update'
                 // sh 'apt-get install ca-certificates curl'
