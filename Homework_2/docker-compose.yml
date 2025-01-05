@@ -1,0 +1,73 @@
+version: "3.9"
+services:
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "8080:8080" # Frontend app port
+    volumes:
+      - ./client:/app
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+    ports:
+      - "3000:3000" # Backend app port
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3000
+    depends_on:
+      - nexus
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    ports:
+      - "3001:3000" # Web interface
+      - "222:22" # SSH access
+    volumes:
+      - gitea-data:/data
+    networks:
+      - app-network
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    ports:
+      - "8082:8080" # Jenkins web interface
+      - "50000:50000" # Jenkins agent communication
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - //var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
+    networks:
+      - app-network
+    depends_on:
+      - gitea
+
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: nexus
+    ports:
+      - "8081:8081" # Nexus web interface
+    volumes:
+      - nexus-data:/nexus-data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  gitea-data:
+  jenkins_home:
+  nexus-data:

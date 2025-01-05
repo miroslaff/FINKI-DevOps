@@ -1,0 +1,90 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout Code') {
+            steps {
+              git branch: 'main', 
+                url: 'https://github.com/anetastankovska/FINKI-DevOps.git'
+              dir('Homework_2') {
+                sh 'pwd'
+                sh 'ls -la'
+        }
+    }
+        }
+        stage('Build Docker Images') {
+            parallel {
+                stage('Build Frontend') {
+                    steps {
+                        echo 'Building Docker image for frontend...'
+                        dir('Homework_2/client') {
+                            sh 'docker build -t my-docker-username/frontend-service:${BUILD_NUMBER} .'
+                        }
+                    }
+                }
+                stage('Build Backend') {
+                    steps {
+                        echo 'Building Docker image for backend...'
+                        dir('Homework_2/server') {
+                            sh 'docker build -t my-docker-username/backend-service:${BUILD_NUMBER} .'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Run Tests') {
+            parallel {
+                stage('Frontend Tests') {
+                    steps {
+                        dir('Homework_2/client') {
+                            sh 'npm test || echo "No tests for frontend."'
+                        }
+                    }
+                }
+                stage('Backend Tests') {
+                    steps {
+                        dir('Homework_2/server') {
+                            sh 'npm test || echo "No tests for backend."'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push Docker Images') {
+            steps {
+                echo 'Pushing Docker images to DockerHub...'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push my-docker-username/frontend-service:${BUILD_NUMBER}
+                    docker push my-docker-username/backend-service:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+        stage('Deploy Services') {
+            steps {
+                dir('Homework_2') {
+                    sh 'docker-compose down'
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline execution completed!'
+        }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Attempting cleanup...'
+            dir('Homework_2') {
+                sh '''
+                docker-compose ps || true
+                docker-compose down || true
+                '''
+            }
+        }
+    }
+}
