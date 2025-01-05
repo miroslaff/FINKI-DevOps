@@ -52,6 +52,13 @@ services:
       - app-network
     depends_on:
       - gitea
+  
+  docker:
+    image: docker:19.03.12-dind  # Docker-in-Docker image
+    privileged: true
+    command: --host=tcp://0.0.0.0:2375  # Expose Docker daemon over TCP
+    networks:
+      - app-network
 
   nexus:
     image: sonatype/nexus3:latest
