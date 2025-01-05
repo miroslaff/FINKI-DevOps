@@ -4,7 +4,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
               git branch: 'main', 
-                url: 'https://github.com/anetastankovska/FINKI-DevOps.git'
+                url: 'https://github.com/miroslaff/FINKI-DevOps.git'
               dir('Homework_2') {
                 sh 'pwd'
                 sh 'ls -la'
