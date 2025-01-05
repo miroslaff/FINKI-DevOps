@@ -34,7 +34,6 @@ pipeline {
                         echo 'Building Docker image for frontend...'
                         dir('Homework_2/client') {
                             // sh 'docker build -t my-docker-username/frontend-service:${BUILD_NUMBER} .'
-                            docker.build()
                         }
                     }
                 }
